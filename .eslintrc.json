@@ -1,0 +1,20 @@
+{
+  "root": true,
+  "env": {
+    "node": true,
+    "jest": true
+  },
+  "parser": "@babel/eslint-parser",
+  "extends": ["airbnb","plugin:prettier/recommended"],
+  "rules": {
+    "no-use-before-define": "off",
+    "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }]
+  },
+  "overrides": [
+    {
+      "files": ["*.test.js"],
+      "env": {
+        "jest": true
+      }
+    }]
+}
