@@ -25,7 +25,9 @@ export default function getTsConfig() {
 	if (!fs.existsSync(fpath)) {
 		return undefined;
 	}
-	const config = JSON.parse(fs.readFileSync(fpath));
+	const tsConfig = fs.readFileSync(fpath);
+
+	const config = JSON.parse(tsConfig);
 
 	return config;
 }

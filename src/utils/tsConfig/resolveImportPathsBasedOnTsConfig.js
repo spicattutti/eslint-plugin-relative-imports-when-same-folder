@@ -3,10 +3,10 @@ import { groupBy } from 'ramda';
 
 /**
  * Inspects a [tsconfig`s module resolution](https://www.typescriptlang.org/docs/handbook/module-resolution.html)
- * configuration in order to make an absolute import path (that relies on either `baseUrl` and -- additionally -- `paths`) an absolute path starting from the cwd of tsconfig.
+ * configuration in order to make an absolute import path (that relies on either `baseUrl` and -- additionally -- `paths`) an absolute path starting from the cwd of tsConfig.compilerOptions.
  * Since one alias can be mapped to multiple paths, a list of reverse-mapped paths is returned.
  * See unit tests for an example/
- * @param tsConfig A parsed tsconfig.json. See https://www.typescriptlang.org/docs/handbook/tsconfig-json.html
+ * @param tsConfig A parsed tsConfig.compilerOptions.json. See https://www.typescriptlang.org/docs/handbook/tsconfig-json.html
  * @param importPath Some absolute import path, e.g. `jQuery`, `src/foo` or `foo`.
  * @returns {string[]} The list of paths.
  */
@@ -14,16 +14,19 @@ export default function resolveImportPathsBasedOnTsConfig({
 	tsConfig,
 	importPath,
 }) {
-	if (!tsConfig.paths) {
+	if (!tsConfig.compilerOptions.paths) {
 		// only baseUrl (e.g. `.` or `./src` is stated)
 		if (
-			!tsConfig.baseUrl.length || // TODO: check if that is possible
-			tsConfig.baseUrl === '.'
+			!tsConfig.compilerOptions.baseUrl.length || // TODO: check if that is possible
+			tsConfig.compilerOptions.baseUrl === '.'
 		) {
 			return importPath;
 		}
-		if (tsConfig.baseUrl.startsWith('./')) {
-			const baseUrlAsAbsolute = tsConfig.baseUrl.replace('./', ''); // ./src -> src
+		if (tsConfig.compilerOptions.baseUrl.startsWith('./')) {
+			const baseUrlAsAbsolute = tsConfig.compilerOptions.baseUrl.replace(
+				'./',
+				''
+			); // ./src -> src
 			return [pathModule.join(baseUrlAsAbsolute, importPath)];
 		}
 	}
@@ -40,7 +43,7 @@ export default function resolveImportPathsBasedOnTsConfig({
 	const possiblePaths = [];
 
 	const { pathMappingsWithWildCard, pathMappingsWithoutWildCard } =
-		groupPathMappingsByWildCardUsage(tsConfig.paths);
+		groupPathMappingsByWildCardUsage(tsConfig.compilerOptions.paths);
 
 	pathMappingsWithoutWildCard.forEach(([currentAlias, currentMappedPaths]) => {
 		if (importPath === currentAlias) {

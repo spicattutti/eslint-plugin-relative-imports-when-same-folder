@@ -31,6 +31,16 @@ function create(context) {
 
 	const tsConfig = getTsConfig();
 
+	if (!tsConfig) {
+		throw new Error(`No tsconfig found. \n\n${ERROR_INFO}\n\n`);
+	}
+
+	if (!checkIfTsConfigAdaptsModuleResolution(tsConfig)) {
+		throw new Error(
+			`No module resolution setup found in tsConfig.json.\n\n${ERROR_INFO} \n\n`
+		);
+	}
+
 	return {
 		ImportDeclaration(node) {
 			const importSource = node.source.value; // sth like "foo/bar/baz.ts"
@@ -39,16 +49,6 @@ function create(context) {
 				// no-op. We assume that some other plugin (e.g. https://www.npmjs.com/package/eslint-plugin-no-relative-import-paths)
 				// ensures that relative import paths are valid.
 				return;
-			}
-
-			if (!tsConfig) {
-				throw new Error(`No tsconfig found. ${ERROR_INFO}`);
-			}
-
-			if (!checkIfTsConfigAdaptsModuleResolution(tsConfig)) {
-				throw new Error(
-					`No module resolution setup found in tsConfig. ${ERROR_INFO}`
-				);
 			}
 
 			// handle import aliases

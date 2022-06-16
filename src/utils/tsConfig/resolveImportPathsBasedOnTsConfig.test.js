@@ -3,7 +3,9 @@ import resolveImportPathsBasedOnTsConfig from './resolveImportPathsBasedOnTsConf
 describe('resolveImportPathBasedOnTsConfig', () => {
 	test('tsConfig only states `baseUrl`', () => {
 		const tsConfig = {
-			baseUrl: './src',
+			compilerOptions: {
+				baseUrl: './src',
+			},
 		};
 
 		const possiblePaths = resolveImportPathsBasedOnTsConfig({
@@ -15,13 +17,15 @@ describe('resolveImportPathBasedOnTsConfig', () => {
 
 	describe('when tsConfig also states paths', () => {
 		const tsConfig = {
-			baseUrl: '.',
-			paths: {
-				// aliases mapped to a single path
-				'@library': ['src/library/src/index.js'],
-				'@library/*': ['src/library/src/*'],
-				// aliases mapped to multiplePaths path
-				'~/*': ['client/src', 'server/src'],
+			compilerOptions: {
+				baseUrl: '.',
+				paths: {
+					// aliases mapped to a single path
+					'@library': ['src/library/src/index.js'],
+					'@library/*': ['src/library/src/*'],
+					// aliases mapped to multiplePaths path
+					'~/*': ['client/src', 'server/src'],
+				},
 			},
 		};
 
@@ -59,10 +63,12 @@ describe('resolveImportPathBasedOnTsConfig', () => {
 
 		it('handles aliases that state a wildcard independent on the order of object entries', () => {
 			const tsConfigWithShuffledPathsOrder = {
-				baseUrl: '.',
-				paths: {
-					'@library/*': ['src/library/src/*'],
-					'@library': ['src/library/src/index.js'],
+				compilerOptions: {
+					baseUrl: '.',
+					paths: {
+						'@library/*': ['src/library/src/*'],
+						'@library': ['src/library/src/index.js'],
+					},
 				},
 			};
 			const possiblePaths = resolveImportPathsBasedOnTsConfig({
