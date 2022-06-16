@@ -1,9 +1,15 @@
 import checkIfRelativePath from './utils/checkIfRelativePath';
 import getLongestStringIntersection from './utils/getLongestStringIntersection';
 import replaceLastOccurrenceInString from './utils/replaceLastOccurrenceInString';
+import getTsConfig from './utils/tsConfig/getTsConfig';
+import checkIfTsConfigAdaptsModuleResolution from './utils/tsConfig/checkIfTsConfigAdaptsModuleResolution';
+import resolveImportPathsBasedOnTsConfig from './utils/tsConfig/resolveImportPathsBasedOnTsConfig';
+
+const RULE_NAME = 'no-relative-imports-when-same-folder';
+const ERROR_INFO = `${RULE_NAME} relies on absolute import paths being setup in tsconfig. Pls check the plugin docs.`;
 
 const rule = {
-	'eslint-plugin-relative-imports-when-same-folder': {
+	[RULE_NAME]: {
 		meta: {
 			type: 'layout',
 			fixable: 'code',
@@ -21,10 +27,13 @@ const rule = {
 // See https://eslint.org/docs/developer-guide/working-with-rules#the-context-object
 
 function create(context) {
+	const cwd = context.getCwd(); // sth like "/dev/some_repo/src/foo/bar"
+
+	const tsConfig = getTsConfig();
+
 	return {
 		ImportDeclaration(node) {
 			const importSource = node.source.value; // sth like "foo/bar/baz.ts"
-			const cwd = context.getCwd(); // sth like "/dev/some_repo/src/foo/bar"
 
 			if (checkIfRelativePath(importSource)) {
 				// no-op. We assume that some other plugin (e.g. https://www.npmjs.com/package/eslint-plugin-no-relative-import-paths)
@@ -32,12 +41,34 @@ function create(context) {
 				return;
 			}
 
-			// Finding the largest intersection between the import path and the CWD.
+			if (!tsConfig) {
+				throw new Error(`No tsconfig found. ${ERROR_INFO}`);
+			}
 
-			const longestPartOfImportSourceFoundInCwd = getLongestStringIntersection({
-				stringContainingNeedle: importSource,
-				haystackString: cwd,
+			if (!checkIfTsConfigAdaptsModuleResolution(tsConfig)) {
+				throw new Error(
+					`No module resolution setup found in tsConfig. ${ERROR_INFO}`
+				);
+			}
+
+			// handle import aliases
+
+			// depending on path mapping config, an import might get resolved to more than one file.
+			// Try to find the largest intersection between the import path and the CWD *for all possible import paths*
+			let longestPartOfImportSourceFoundInCwd = '';
+
+			const sanitizedImportSources = resolveImportPathsBasedOnTsConfig({
+				tsConfig,
+				importPath: importSource,
 			});
+
+			sanitizedImportSources.forEach((possibleSource) => {
+				longestPartOfImportSourceFoundInCwd = getLongestStringIntersection({
+					stringContainingNeedle: possibleSource,
+					haystackString: cwd,
+				});
+			});
+
 			if (!longestPartOfImportSourceFoundInCwd.length) {
 				return;
 			}

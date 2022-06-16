@@ -24,12 +24,15 @@
     "same",
     "folder"
   ],
-  "author": "Sascha Picard @ Tutti / Swiss Marketplaces Group",
+  "author": "Sascha Picard @ Tutti / Swiss Marketplaces Group <sascha.picard@tutti.ch>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/spicattutti/eslint-plugin-relative-imports-when-same-folder/issues"
   },
   "homepage": "https://github.com/spicattutti/eslint-plugin-relative-imports-when-same-folder#readme",
+  "dependencies": {
+    "ramda": "^0.28.0"
+  },
   "devDependencies": {
     "@babel/cli": "^7.17.10",
     "@babel/core": "^7.18.5",

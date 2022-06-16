@@ -65,7 +65,7 @@ Therefore we only consider an overlap if the replacement of it in the import pat
 
 ### Import Aliases (WIP)
 
-A modern JS/TS-based project can define import aliases using [webpack`s resolve option](https://webpack.js.org/configuration/resolve/) or [path mappings specified tsconfig](https://www.typescriptlang.org/docs/handbook/module-resolution.html).
+A modern JS/TS-based project can not only define some sort of baseUrl like `src`, it can also define import aliases using [webpack`s resolve option](https://webpack.js.org/configuration/resolve/) or [path mappings specified tsconfig](https://www.typescriptlang.org/docs/handbook/module-resolution.html).
 
 As an example, `~` can be an alias for all code under `<repository-root>/src`.
 
@@ -84,7 +84,6 @@ We can solve this by
 - restricting the usage of this plugin for repositories that define aliases in tsconfig
 - importing the tsconfig and reading its properties for module resolution (`baseUrl` and `paths`)
 - replacing an alias found in an import path with the actual directory/file path stated in the path mapping.
-
 
 
 ### Largest Overlap between cwd and import path is not unique
