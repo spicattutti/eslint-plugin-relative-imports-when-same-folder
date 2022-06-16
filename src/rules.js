@@ -1,3 +1,4 @@
+import path from 'path';
 import checkIfRelativePath from './utils/checkIfRelativePath';
 import getLongestStringIntersection from './utils/getLongestStringIntersection';
 import replaceLastOccurrenceInString from './utils/replaceLastOccurrenceInString';
@@ -14,20 +15,22 @@ const rule = {
 			type: 'layout',
 			fixable: 'code',
 			hasSuggestions: true,
+			messages: {
+				importCanBeRelative:
+					'Import path can be relative since a file is imported from within the same folder \n \n' +
+					'Replace with {{fixedImportPath}}',
+			},
 		},
 		create,
-		messages: {
-			importCanBeRelative:
-				'Import path can be relative since a file is imported from within the same folder \n \n' +
-				'Replace with {{fixedImportPath}}',
-		},
 	},
 };
 
 // See https://eslint.org/docs/developer-guide/working-with-rules#the-context-object
 
 function create(context) {
-	const cwd = context.getCwd(); // sth like "/dev/some_repo/src/foo/bar"
+	// TODO: document new aproach using the filename
+
+	const cwd = path.dirname(context.getFilename()); // sth like "/dev/some_repo/src/foo/bar"
 
 	const tsConfig = getTsConfig();
 
@@ -53,9 +56,12 @@ function create(context) {
 
 			// handle import aliases
 
-			// depending on path mapping config, an import might get resolved to more than one file.
-			// Try to find the largest intersection between the import path and the CWD *for all possible import paths*
+			// Depending on path mapping config, an import might get resolved to more than one file.
+			// If there are multiple possible import paths, only is one is expected to
+			// be a candidate for a relative import
+			// Try to find the largest intersection between the import path and the CWD *for all possible import paths* and save that intersection string as well as the path.
 			let longestPartOfImportSourceFoundInCwd = '';
+			let pathCandidate = '';
 
 			const sanitizedImportSources = resolveImportPathsBasedOnTsConfig({
 				tsConfig,
@@ -70,6 +76,7 @@ function create(context) {
 
 				if (currentLongestIntersection > longestPartOfImportSourceFoundInCwd) {
 					longestPartOfImportSourceFoundInCwd = currentLongestIntersection;
+					pathCandidate = possibleSource;
 				}
 			});
 
@@ -81,7 +88,7 @@ function create(context) {
 			// If the result is a valid relative URL, use it to fix
 
 			const sourceWithOverlapReplacedWithDot = replaceLastOccurrenceInString({
-				input: importSource,
+				input: pathCandidate,
 				find: longestPartOfImportSourceFoundInCwd,
 				replaceWith: '.',
 			});
@@ -95,11 +102,13 @@ function create(context) {
 			context.report({
 				node,
 				messageId: 'importCanBeRelative',
-				data: 'sourceWithOverlapReplacedWithDot',
+				data: {
+					fixedImportPath: sourceWithOverlapReplacedWithDot,
+				},
 				fix: (fixer) => {
 					return fixer.replaceText(
 						node.source,
-						sourceWithOverlapReplacedWithDot
+						`"${sourceWithOverlapReplacedWithDot}"`
 					);
 				},
 			});

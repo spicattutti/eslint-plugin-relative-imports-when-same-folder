@@ -79,12 +79,12 @@ See the [contributing](CONTRIBUTING.md) guide for broad instructions on how to g
 You can find an introduction to how the problem at hand is approached in the [docs](docs/INNER_WORKINGS.md).
 
 # TODOs
-- [] check eslint settings to tell clients that this is a plugin for ts-parser
-- [] Optimize reversing TS module resolution: Instead of resolving the lookup with a path starting from the BaseUrl, we could use the cwd of tsconfig to get absolute paths in terms of file system. That greatly de-complexes matching the common part in import path and the cwd of the linted file, because we do not have to look for the largest overlap anymore, but instead just remove the common file path start.
-- [] Test for windows
-- [] Review algorithmic performance, thereby support optimizations with ..
-- [] Performance testing, see https://www.darraghoriordan.com/2021/11/06/how-to-write-an-eslint-plugin-typescript/
-- [] migrate to typescript !
-- [] Add proper unit test using `RuleTester` from [typescript-eslint](https://github.com/typescript-eslint/typescript-eslint)
-- [] Check for a lib that helps with dealing with globs instead of verbosely hand-rolling the string manipulation logic
-= [] Solidify reverse mapping of path aliases with more tests, preferably using real world configs
+- [ ] check eslint settings to tell clients that this is a plugin for ts-parser
+- [ ] Optimize reversing TS module resolution: Instead of resolving the lookup with a path starting from the BaseUrl, we could use the cwd of tsconfig to get absolute paths in terms of file system. That greatly de-complexes matching the common part in import path and the cwd of the linted file, because we do not have to look for the largest overlap anymore, but instead just remove the common file path start.
+- [ ] Test for windows
+- [ ] Review algorithmic performance, thereby support optimizations with ..
+- [ ] Performance testing, see https://www.darraghoriordan.com/2021/11/06/how-to-write-an-eslint-plugin-typescript/
+- [ ] migrate to typescript !
+- [ ] Add proper unit test using `RuleTester` from [typescript-eslint](https://github.com/typescript-eslint/typescript-eslint)
+- [ ] Check for a lib that helps with dealing with globs instead of verbosely hand-rolling the string manipulation logic
+= [ ] Solidify reverse mapping of path aliases with more tests, preferably using real world configs
