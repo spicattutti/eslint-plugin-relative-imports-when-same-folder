@@ -63,10 +63,14 @@ function create(context) {
 			});
 
 			sanitizedImportSources.forEach((possibleSource) => {
-				longestPartOfImportSourceFoundInCwd = getLongestStringIntersection({
+				const currentLongestIntersection = getLongestStringIntersection({
 					stringContainingNeedle: possibleSource,
 					haystackString: cwd,
 				});
+
+				if (currentLongestIntersection > longestPartOfImportSourceFoundInCwd) {
+					longestPartOfImportSourceFoundInCwd = currentLongestIntersection;
+				}
 			});
 
 			if (!longestPartOfImportSourceFoundInCwd.length) {
