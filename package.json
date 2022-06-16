@@ -2,10 +2,12 @@
   "name": "eslint-plugin-relative-imports-when-same-folder",
   "version": "0.0.1",
   "description": "An eslint plugin to convert any absolute import paths to relative ones if files are imported from within the same folder",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "jest",
     "prepare": "husky install",
+    "prebuild": "npm run build:clean",
+    "build:clean": "rm -rf dist",
     "build": "babel index.js -d dist",
     "install": "npm run build"
   },
