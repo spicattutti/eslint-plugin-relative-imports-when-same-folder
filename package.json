@@ -8,7 +8,7 @@
     "prepare": "husky install",
     "prebuild": "npm run build:clean",
     "build:clean": "rm -rf dist",
-    "build": "babel index.js -d dist",
+    "build": "babel index.js -d dist && babel src -d dist/src",
     "install": "npm run build"
   },
   "repository": {
