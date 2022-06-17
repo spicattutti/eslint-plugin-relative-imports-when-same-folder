@@ -87,4 +87,8 @@ You can find an introduction to how the problem at hand is approached in the [do
 - [ ] migrate to typescript !
 - [ ] Add proper unit test using `RuleTester` from [typescript-eslint](https://github.com/typescript-eslint/typescript-eslint)
 - [ ] Check for a lib that helps with dealing with globs instead of verbosely hand-rolling the string manipulation logic
-= [ ] Solidify reverse mapping of path aliases with more tests, preferably using real world configs
+- [ ] Solidify reverse mapping of path aliases with more tests, preferably using real world configs
+
+# Acknowledgements
+
+Thanks [SMG](https://swissmarketplace.group/en/) for letting me work on company time.
