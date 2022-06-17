@@ -1,6 +1,7 @@
-import path from 'path';
+import pathModule from 'path';
+
 import checkIfRelativePath from './utils/checkIfRelativePath';
-import getLongestStringIntersection from './utils/getLongestStringIntersection';
+import getLongestPathIntersection from './utils/getLongestPathIntersection';
 import replaceLastOccurrenceInString from './utils/replaceLastOccurrenceInString';
 import getTsConfig from './utils/tsConfig/getTsConfig';
 import checkIfTsConfigAdaptsModuleResolution from './utils/tsConfig/checkIfTsConfigAdaptsModuleResolution';
@@ -20,8 +21,9 @@ const ERROR_INFO =
  * @returns {{ImportDeclaration(*): void}}
  */
 function createRule(context) {
-	const filename = context.getFilename(); // sth like "/Users/spic/dev/some_repo/src/Foo/Bar/Bar.tsx"
-	const cwd = path.dirname(filename); //  "/Users/spic/dev/some_repo/src/Foo/Bar"
+	const filename = context.getFilename(); // sth like "/Users/spic/dev/some_repo/src/library/Foo/Bar/Bar.tsx"
+	const linterCwd = context.getCwd(); // cwd passed to `Linter`, see https://eslint.org/docs/developer-guide/nodejs-api#linter
+	const dirOfInspectedFile = pathModule.dirname(filename); //  "/Users/spic/dev/some_repo/src/library/Foo/Bar"
 
 	const tsConfig = getTsConfig();
 
@@ -36,8 +38,9 @@ function createRule(context) {
 	}
 
 	return {
+		// AST element to provide the import path
 		ImportDeclaration(node) {
-			const importSource = node.source.value; // sth like "foo/bar/baz.ts"
+			const importSource = node.source.value; // e.g. "@library/Foo/Bar/Baz/baz.ts"
 
 			if (checkIfRelativePath(importSource)) {
 				// no-op. We assume that some other plugin (e.g. https://www.npmjs.com/package/eslint-plugin-no-relative-import-paths)
@@ -55,19 +58,29 @@ function createRule(context) {
 			let pathCandidate = '';
 
 			const sanitizedImportSources = resolveImportPathsBasedOnTsConfig({
+				// e.g.["src/library/Foo/Bar/Baz/baz.ts"]
 				tsConfig,
 				importPath: importSource,
 			});
 
-			sanitizedImportSources.forEach((possibleSource) => {
-				const currentLongestIntersection = getLongestStringIntersection({
-					stringContainingNeedle: possibleSource,
-					haystackString: cwd,
+			sanitizedImportSources.forEach((possibleSanitizedImportSource) => {
+				const possibleSanitizedImportSourceAsFullDiskPath = pathModule.join(
+					linterCwd,
+					possibleSanitizedImportSource
+				); // e.g.["/Users/spic/dev/some_repo/src/library/Foo/Bar/Baz/baz.ts"]
+
+				const currentLongestIntersection = getLongestPathIntersection({
+					pathA: possibleSanitizedImportSourceAsFullDiskPath,
+					pathB: dirOfInspectedFile,
 				});
 
+				const currentLongestIntersectionFromLinterCwdOn =
+					currentLongestIntersection.replace(linterCwd, '');
+
 				if (currentLongestIntersection > longestPartOfImportSourceFoundInCwd) {
-					longestPartOfImportSourceFoundInCwd = currentLongestIntersection;
-					pathCandidate = possibleSource;
+					longestPartOfImportSourceFoundInCwd =
+						currentLongestIntersectionFromLinterCwdOn;
+					pathCandidate = possibleSanitizedImportSource;
 				}
 			});
 
@@ -75,12 +88,12 @@ function createRule(context) {
 				return;
 			}
 
-			// try to replace cwd in importSource with a dot to make the path relative.
+			// try to make import path relative based on the found overlap.
 			// If the result is a valid relative URL, use it to fix
 
 			const sourceWithOverlapReplacedWithDot = replaceLastOccurrenceInString({
-				input: pathCandidate,
-				find: longestPartOfImportSourceFoundInCwd,
+				input: `/${pathCandidate}`, // does not start with a slash, so
+				find: longestPartOfImportSourceFoundInCwd, // starts with a slash
 				replaceWith: '.',
 			});
 

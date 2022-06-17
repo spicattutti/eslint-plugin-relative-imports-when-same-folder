@@ -80,7 +80,6 @@ You can find an introduction to how the problem at hand is approached in the [do
 
 # TODOs
 - [ ] check eslint settings to tell clients that this is a plugin for ts-parser
-- [ ] Optimize reversing TS module resolution: Instead of resolving the lookup with a path starting from the BaseUrl, we could use the cwd of tsconfig to get absolute paths in terms of file system. That greatly de-complexes matching the common part in import path and the cwd of the linted file, because we do not have to look for the largest overlap anymore, but instead just remove the common file path start.
 - [ ] Test for windows
 - [ ] Review algorithmic performance, thereby support optimizations with ..
 - [ ] Performance testing, see https://www.darraghoriordan.com/2021/11/06/how-to-write-an-eslint-plugin-typescript/
@@ -88,6 +87,9 @@ You can find an introduction to how the problem at hand is approached in the [do
 - [ ] Add proper unit test using `RuleTester` from [typescript-eslint](https://github.com/typescript-eslint/typescript-eslint)
 - [ ] Check for a lib that helps with dealing with globs instead of verbosely hand-rolling the string manipulation logic
 - [ ] Solidify reverse mapping of path aliases with more tests, preferably using real world configs
+- [ ] Try to make the eslint config of this project use the rule itself, along with [import/order](https://github.com/import-js/eslint-plugin-import/blob/main/docs/rules/order.md) and [eslint-plugin-no-relative-import-paths](https://www.npmjs.com/package/eslint-plugin-no-relative-import-paths) :) This clears the need example repo.
+- [ ] Re-check docs if they still align with tweaked implementation
+- [ ] CI
 
 # Acknowledgements
 

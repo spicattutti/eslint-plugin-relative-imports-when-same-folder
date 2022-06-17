@@ -1,0 +1,189 @@
+import createRule, { messageIds } from './createRule';
+import getTsConfig from './utils/tsConfig/getTsConfig';
+
+jest.mock('./utils/tsConfig/getTsConfig');
+
+const defaultTsConfig = {
+	compilerOptions: {
+		baseUrl: '.',
+		paths: {
+			foo: 'bar',
+		},
+	},
+};
+
+const defaultContext = {
+	getFilename: () => '/Users/spic/dev/some_repo/src/Foo/Bar/Bar.tsx',
+	getCwd: () => '/Users/spic/dev/some_repo',
+	report: jest.fn(),
+};
+
+const runRuleForPath = ({
+	importPath,
+	inspectedFilePath,
+	tsConfig = defaultTsConfig,
+}) => {
+	getTsConfig.mockReturnValueOnce(tsConfig);
+
+	const node = {
+		source: {
+			value: importPath,
+		},
+	};
+
+	const context = {
+		...defaultContext,
+		getFilename: () => inspectedFilePath,
+	};
+
+	const rule = createRule(context);
+
+	return rule.ImportDeclaration(node);
+};
+
+describe('createRule', () => {
+	describe('if tsconfig cannot be found', () => {
+		it('throws, since that setup is crucial', () => {
+			const notFoundTsConfig = null;
+
+			expect(() =>
+				runRuleForPath({
+					importPath: 'does-not-matter',
+					inspectedFilePath: 'also-does-not-matter',
+					tsConfig: notFoundTsConfig,
+				})
+			).toThrow();
+		});
+	});
+
+	describe('if import path is relative', () => {
+		it('does not report an error', () => {
+			runRuleForPath({
+				importPath: './foo',
+				inspectedFilePath: 'does-not-matter',
+			});
+			expect(defaultContext.report).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('for absolute import paths', () => {
+		const tsConfig = {
+			compilerOptions: {
+				baseUrl: '.',
+				paths: {
+					// aliases mapped to a single path
+					'@library': ['src/library/index.js'],
+					'@library/*': ['src/library/*'],
+					// aliases mapped to multiplePaths path
+					'~/*': ['src/client/src', 'src/server/src'],
+				},
+			},
+		};
+
+		describe('that imports using an alias not containing a wildcard', () => {
+			it('resolves to the file the alias points to', () => {
+				runRuleForPath({
+					inspectedFilePath: '/Users/spic/dev/some_repo/src/index.js',
+					importPath: '@library',
+					tsConfig,
+				});
+
+				expect(defaultContext.report).toHaveBeenCalledWith({
+					data: {
+						fixedImportPath: './library/index.js',
+					},
+					fix: expect.any(Function),
+					messageId: messageIds.importCanBeRelative,
+					node: {
+						source: {
+							value: '@library',
+						},
+					},
+				});
+			});
+		});
+
+		describe('that imports from a sibling folder (with an overlap in the names)', () => {
+			it('does not report an error', () => {
+				runRuleForPath({
+					inspectedFilePath:
+						'/Users/spic/dev/some_repo/src/library/components/FormCheckbox/FormCheckbox.tsx',
+					importPath: '@library/src/library/components/Form/Form.scss',
+					tsConfig,
+				});
+
+				expect(defaultContext.report).not.toHaveBeenCalled();
+			});
+		});
+
+		describe('that imports from a descendant folder', () => {
+			it('reports the error', () => {
+				runRuleForPath({
+					inspectedFilePath:
+						'/Users/spic/dev/some_repo/src/library/components/FormCheckbox/FormCheckbox.tsx',
+					importPath: '@library/components/FormCheckbox/Icon/Icon.tsx',
+					tsConfig,
+				});
+
+				expect(defaultContext.report).toHaveBeenCalledWith({
+					data: {
+						fixedImportPath: './Icon/Icon.tsx',
+					},
+					fix: expect.any(Function),
+					messageId: messageIds.importCanBeRelative,
+					node: {
+						source: {
+							value: '@library/components/FormCheckbox/Icon/Icon.tsx',
+						},
+					},
+				});
+			});
+		});
+
+		describe('that have an alias that maps two two different dirs', () => {
+			it('reports the error', () => {
+				runRuleForPath({
+					inspectedFilePath:
+						'/Users/spic/dev/some_repo/src/client/src/components/FormCheckbox/FormCheckbox.tsx',
+					importPath: '~/components/FormCheckbox/Icon/Icon.tsx',
+					tsConfig,
+				});
+
+				expect(defaultContext.report).toHaveBeenCalledWith({
+					data: {
+						fixedImportPath: './Icon/Icon.tsx',
+					},
+					fix: expect.any(Function),
+					messageId: messageIds.importCanBeRelative,
+					node: {
+						source: {
+							value: '~/components/FormCheckbox/Icon/Icon.tsx',
+						},
+					},
+				});
+
+				// test for the other possible dir
+
+				runRuleForPath({
+					inspectedFilePath:
+						'/Users/spic/dev/some_repo/src/server/src/components/FormCheckbox/FormCheckbox.tsx',
+					importPath: '~/components/FormCheckbox/Icon/Icon.tsx',
+					tsConfig,
+				});
+
+				expect(defaultContext.report).toHaveBeenCalledWith({
+					data: {
+						fixedImportPath: './Icon/Icon.tsx',
+					},
+					fix: expect.any(Function),
+					messageId: messageIds.importCanBeRelative,
+					node: {
+						source: {
+							value: '~/components/FormCheckbox/Icon/Icon.tsx',
+						},
+					},
+				});
+			});
+		});
+	});
+});

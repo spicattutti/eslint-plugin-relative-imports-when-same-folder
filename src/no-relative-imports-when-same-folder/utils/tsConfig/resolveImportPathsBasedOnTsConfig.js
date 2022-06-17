@@ -14,7 +14,9 @@ export default function resolveImportPathsBasedOnTsConfig({
 	tsConfig,
 	importPath,
 }) {
-	if (!tsConfig.compilerOptions.paths) {
+	const pathMappings = tsConfig.compilerOptions.paths;
+
+	if (!pathMappings) {
 		// only baseUrl (e.g. `.` or `./src` is stated)
 		if (
 			!tsConfig.compilerOptions.baseUrl.length || // TODO: check if that is possible
@@ -31,7 +33,6 @@ export default function resolveImportPathsBasedOnTsConfig({
 		}
 	}
 
-	// handle path mappings
 	// Reminder: TS can resolve one alias to multiple paths
 
 	// First, try to find matches using aliases that do not use a wildcard in the given import path.
@@ -42,8 +43,8 @@ export default function resolveImportPathsBasedOnTsConfig({
 
 	const possiblePaths = [];
 
-	const { pathMappingsWithWildCard, pathMappingsWithoutWildCard } =
-		groupPathMappingsByWildCardUsage(tsConfig.compilerOptions.paths);
+	const { pathMappingsWithWildCard = [], pathMappingsWithoutWildCard = [] } =
+		groupPathMappingsByWildCardUsage(pathMappings);
 
 	pathMappingsWithoutWildCard.forEach(([currentAlias, currentMappedPaths]) => {
 		if (importPath === currentAlias) {
