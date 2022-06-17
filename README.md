@@ -17,7 +17,6 @@ import Bar from "./Baz"; // valid relative path
 import Something from "src/Foo/Baz";
 ```
 
-
 ```ts
 // ## Import descendant
 
@@ -48,12 +47,36 @@ As a workaround to this limitation, you could re-use or re-declare webpack alias
 
 This plugin only attempts to support the [Node Module resolution strategy](https://www.typescriptlang.org/docs/handbook/module-resolution.html#module-resolution-strategies).
 
+As of now, only simple tsconfig (and path mappings) setups are supported. That means there is no
+support for
+- [rootDirs](https://www.typescriptlang.org/tsconfig#rootDirs)
+- multiple tsconfigs that extend each other.
 
-Using [rootDirs](https://www.typescriptlang.org/tsconfig#rootDirs) is also not supported.
+Feel free to contribute.
+
+# How to contribute
+
+See the [contributing](CONTRIBUTING.md) guide for broad instructions on how to get started with this project.
+
+You can find an introduction to how the problem at hand is approached in the [docs](docs/INNER_WORKINGS.md).
 
 ## Setup Instructions 
 
-TBD
+As mentioned, this is not published to npm yet.
+If you want to take it for a spin, run
+```
+yarn add -D https://github.com/spicattutti/eslint-plugin-relative-imports-when-same-folder
+```
+respectively
+```
+npm install --save-dev https://github.com/spicattutti/eslint-plugin-relative-imports-when-same-folder
+```
+
+Then update your eslint config by adding `relative-imports-when-same-folder` to the list of plugins,
+and turn on the main rule `no-relative-imports-when-same-folder` of this plugin.
+```
+"relative-imports-when-same-folder/no-relative-imports-when-same-folder": "error",
+```
 
 ## Example Repo
 
@@ -72,11 +95,6 @@ We utilized [import/order](https://github.com/import-js/eslint-plugin-import/blo
 
 What was missing was automation to refactor all absolute imports that can be relative to actually be relative, so they are moved to the last block.
 
-# How to contribute
-
-See the [contributing](CONTRIBUTING.md) guide for broad instructions on how to get started with this project.
-
-You can find an introduction to how the problem at hand is approached in the [docs](docs/INNER_WORKINGS.md).
 
 # TODOs
 - [ ] check eslint settings to tell clients that this is a plugin for ts-parser
@@ -88,7 +106,6 @@ You can find an introduction to how the problem at hand is approached in the [do
 - [ ] Check for a lib that helps with dealing with globs instead of verbosely hand-rolling the string manipulation logic
 - [ ] Solidify reverse mapping of path aliases with more tests, preferably using real world configs
 - [ ] Try to make the eslint config of this project use the rule itself, along with [import/order](https://github.com/import-js/eslint-plugin-import/blob/main/docs/rules/order.md) and [eslint-plugin-no-relative-import-paths](https://www.npmjs.com/package/eslint-plugin-no-relative-import-paths) :) This clears the need example repo.
-- [ ] Re-check docs if they still align with tweaked implementation
 - [ ] CI
 
 # Acknowledgements
