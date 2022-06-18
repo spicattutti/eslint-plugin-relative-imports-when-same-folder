@@ -53,7 +53,7 @@ describe('resolveImportPathBasedOnTsConfig', () => {
 			expect(possiblePaths).toEqual(['src/library/src/foo']);
 		});
 
-		it('it handles multiple paths assigned to an alias', () => {
+		it('handles multiple paths assigned to an alias', () => {
 			const possiblePaths = resolveImportPathsBasedOnTsConfig({
 				tsConfig,
 				importPath: '~/utils',

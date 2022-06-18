@@ -16,7 +16,9 @@
     "no-use-before-define": "off",
     "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
     "jest/prefer-expect-assertions": "off",
-    "jest/require-to-throw-message": "off"
+    "jest/require-to-throw-message": "off",
+    "jest/prefer-strict-equal": "off",
+    "jest/consistent-test-it": "off"
   },
   "overrides": [
     {
