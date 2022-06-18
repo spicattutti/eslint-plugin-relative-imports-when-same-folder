@@ -101,7 +101,7 @@ What was missing was automation to refactor all absolute imports that can be rel
 - [ ] Add proper unit test using `RuleTester` from [typescript-eslint](https://github.com/typescript-eslint/typescript-eslint)
 - [ ] Check for a lib that helps with dealing with globs instead of verbosely hand-rolling the string manipulation logic
 - [ ] Solidify reverse mapping of path aliases with more tests, preferably using real world configs
-- [ ] Try to make the eslint config of this project use the rule itself, along with [import/order](https://github.com/import-js/eslint-plugin-import/blob/main/docs/rules/order.md) and [eslint-plugin-no-relative-import-paths](https://www.npmjs.com/package/eslint-plugin-no-relative-import-paths) :) This clears the need example repo.
+- [ ] Try to make the eslint config of this project [use the rule itself](https://github.com/not-an-aardvark/eslint-plugin-self), along with [import/order](https://github.com/import-js/eslint-plugin-import/blob/main/docs/rules/order.md) and [eslint-plugin-no-relative-import-paths](https://www.npmjs.com/package/eslint-plugin-no-relative-import-paths) :) This clears the need example repo. 
 - [ ] CI
 
 # Acknowledgements
