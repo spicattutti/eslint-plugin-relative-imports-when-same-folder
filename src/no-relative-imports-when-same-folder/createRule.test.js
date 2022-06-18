@@ -1,10 +1,18 @@
-import fs from 'fs';
 import createRule, { messageIds } from './createRule';
 import getTsConfig from './utils/tsConfig/getTsConfig';
+import checkIfFileExists from './utils/checkIfFileExists';
 
 jest.mock('./utils/tsConfig/getTsConfig');
 
-const existsSyncSpy = jest.spyOn(fs, 'existsSync').mockReturnValue(true);
+jest.mock('./utils/checkIfFileExists', () => {
+	const actual = jest.requireActual('./utils/checkIfFileExists');
+
+	return {
+		...actual,
+		__esModule: true,
+		default: jest.fn(actual.default),
+	};
+});
 
 const defaultTsConfig = {
 	compilerOptions: {
@@ -145,6 +153,10 @@ describe('createRule', () => {
 
 		describe('that have an alias that maps two two different dirs', () => {
 			it('reports the error', () => {
+				checkIfFileExists.mockImplementationOnce(() => {
+					return true;
+				});
+
 				runRuleForPath({
 					inspectedFilePath:
 						'/Users/spic/dev/some_repo/src/client/src/components/FormCheckbox/FormCheckbox.tsx',
@@ -168,7 +180,14 @@ describe('createRule', () => {
 				// test for the other possible dir
 
 				// simulate that the second path stated for the alias can be resolved to a file
-				existsSyncSpy.mockReturnValueOnce(true).mockReturnValueOnce(false);
+
+				checkIfFileExists
+					.mockImplementationOnce(() => {
+						return true;
+					})
+					.mockImplementationOnce(() => {
+						return false;
+					});
 
 				runRuleForPath({
 					inspectedFilePath:

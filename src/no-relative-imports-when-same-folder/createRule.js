@@ -1,10 +1,10 @@
 import pathModule from 'path';
-import fs from 'fs';
 
 import checkIfRelativePath from './utils/checkIfRelativePath';
 import getTsConfig from './utils/tsConfig/getTsConfig';
 import checkIfTsConfigAdaptsModuleResolution from './utils/tsConfig/checkIfTsConfigAdaptsModuleResolution';
 import resolveImportPathsBasedOnTsConfig from './utils/tsConfig/resolveImportPathsBasedOnTsConfig';
+import checkIfFileExists from './utils/checkIfFileExists';
 
 export const messageIds = {
 	importCanBeRelative: 'importCanBeRelative',
@@ -62,9 +62,14 @@ function createRule(context) {
 			);
 
 			// If we have two sources, check if one of these exists. Take the first match.
-			const existingAbsoluteImportSources = absoluteImportSources.filter(
-				fs.existsSync
-			);
+			const existingAbsoluteImportSources =
+				absoluteImportSources.length > 1
+					? absoluteImportSources.filter((src) => {
+							const bar = checkIfFileExists(src);
+							return bar;
+					  })
+					: absoluteImportSources;
+
 			if (!existingAbsoluteImportSources.length === 1) {
 				return;
 			}
