@@ -32,7 +32,6 @@ import Bar from "./Bar/Bar"; // valid relative path
 import Something from "src/Foo/Bar/Bar";
 ```
 
-
 ## Disclaimer
 
 This Plugin is not battle-tested, so consider it as ⚠️ not production ready ⚠️.
@@ -40,25 +39,23 @@ Until it gets released to npm it is a Proof of concept.
 
 ## Prerequisites / Limitations
 
-⚠️ Import aliases must be defined as `tsconfig.json` in the repository root. ⚠️
+A modern JS/TS-based project can not only define some sort of baseUrl like `src`, it can also define import aliases using [webpack`s resolve option](https://webpack.js.org/configuration/resolve/) or [path mappings specified tsconfig](https://www.typescriptlang.org/docs/handbook/module-resolution.html).
 
-Contributions to how to retrieve module resolution mappings out of a webpack config are welcome.
-As a workaround to this limitation, you could re-use or re-declare webpack aliases in tsconfig.
+As an example, `~` can be an alias for all code under `<repository-root>/src`.
 
-This plugin only attempts to support the [Node Module resolution strategy](https://www.typescriptlang.org/docs/handbook/module-resolution.html#module-resolution-strategies).
-
-As of now, only simple tsconfig (and path mappings) setups are supported. That means there is no
+⚠️ This plugin only resolves module resolution configs `baseUrl` and `paths` defined in a single `tsconfig.json` in the repository root. ⚠️
+It also only supports the common [Node Module resolution strategy](https://www.typescriptlang.org/docs/handbook/module-resolution.html#module-resolution-strategies). There is no
 support for
 - [rootDirs](https://www.typescriptlang.org/tsconfig#rootDirs)
 - multiple tsconfigs that extend each other.
 
-Feel free to contribute.
+Contributions to make this more flexible or to retrieve module resolution mappings out of a webpack config are welcome.
+
+As a workaround to this limitation, a project can re-use or re-declare import aliases that are defined in a webpack config in the project`s tsconfig.
 
 # How to contribute
 
 See the [contributing](CONTRIBUTING.md) guide for broad instructions on how to get started with this project.
-
-You can find an introduction to how the problem at hand is approached in the [docs](docs/INNER_WORKINGS.md).
 
 ## Setup Instructions 
 
@@ -98,8 +95,7 @@ What was missing was automation to refactor all absolute imports that can be rel
 
 # TODOs
 - [ ] check eslint settings to tell clients that this is a plugin for ts-parser
-- [ ] Support windoes -> e.g. read and use [platform specific segment separator](https://nodejs.org/api/path.html#pathsep)
-- [ ] Review algorithmic performance, thereby support optimizations with ..
+- [ ] Support windows -> e.g. read and use [platform specific segment separator](https://nodejs.org/api/path.html#pathsep)
 - [ ] Performance testing, see https://www.darraghoriordan.com/2021/11/06/how-to-write-an-eslint-plugin-typescript/
 - [ ] migrate to typescript !
 - [ ] Add proper unit test using `RuleTester` from [typescript-eslint](https://github.com/typescript-eslint/typescript-eslint)

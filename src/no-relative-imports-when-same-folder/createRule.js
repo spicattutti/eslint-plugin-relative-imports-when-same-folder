@@ -1,12 +1,10 @@
 import pathModule from 'path';
+import fs from 'fs';
 
 import checkIfRelativePath from './utils/checkIfRelativePath';
-import getLongestPathIntersection from './utils/getLongestPathIntersection';
-import replaceLastOccurrenceInString from './utils/replaceLastOccurrenceInString';
 import getTsConfig from './utils/tsConfig/getTsConfig';
 import checkIfTsConfigAdaptsModuleResolution from './utils/tsConfig/checkIfTsConfigAdaptsModuleResolution';
 import resolveImportPathsBasedOnTsConfig from './utils/tsConfig/resolveImportPathsBasedOnTsConfig';
-import checkIfImportIsFromSameFolder from './utils/checkIfImportIsFromSameFolder';
 
 export const messageIds = {
 	importCanBeRelative: 'importCanBeRelative',
@@ -41,9 +39,9 @@ function createRule(context) {
 	return {
 		// AST element to provide the import path
 		ImportDeclaration(node) {
-			const importSource = node.source.value; // e.g. "@library/Foo/Bar/Baz/baz.ts"
+			const rawImportSource = node.source.value; // e.g. "@library/Foo/Bar/Baz/baz.ts"
 
-			if (checkIfRelativePath(importSource)) {
+			if (checkIfRelativePath(rawImportSource)) {
 				// no-op. We assume that some other plugin (e.g. https://www.npmjs.com/package/eslint-plugin-no-relative-import-paths)
 				// ensures that relative import paths are valid.
 				return;
@@ -52,74 +50,40 @@ function createRule(context) {
 			// handle import aliases
 
 			// Depending on path mapping config, an import might get resolved to more than one file.
-			// If there are multiple possible import paths, only is one is expected to
-			// be a candidate for a relative import
-			// Try to find the largest intersection between the import path and the CWD *for all possible import paths* and save that intersection string as well as the path.
-			// TODO: make namings clearer
-			let overlap = '';
-			let pathCandidate = '';
-			let pathCandidateAbsolute = '';
-
 			const sanitizedImportSources = resolveImportPathsBasedOnTsConfig({
 				// e.g.["src/library/Foo/Bar/Baz/baz.ts"]
 				tsConfig,
-				importPath: importSource,
+				importPath: rawImportSource,
 			});
 
-			sanitizedImportSources.forEach((possibleSanitizedImportSource) => {
-				const possibleSanitizedImportSourceAsFullDiskPath = pathModule.join(
-					linterCwd,
-					possibleSanitizedImportSource
-				); // e.g.["/Users/spic/dev/some_repo/src/library/Foo/Bar/Baz/baz.ts"]
+			// Map to absolute imports to allow file lookups
+			const absoluteImportSources = sanitizedImportSources.map(
+				(source) => pathModule.join(linterCwd, source) // e.g.["/Users/spic/dev/some_repo/src/library/Foo/Bar/Baz/baz.ts"]
+			);
 
-				const commonRootPath = getLongestPathIntersection({
-					pathA: possibleSanitizedImportSourceAsFullDiskPath,
-					pathB: dirOfInspectedFile,
-				});
-
-				// remove path to repository from start of path
-				let currentLongestIntersectionFromLinterCwdOn = commonRootPath.replace(
-					linterCwd,
-					''
-				);
-
-				// strip trailing slash
-				currentLongestIntersectionFromLinterCwdOn =
-					currentLongestIntersectionFromLinterCwdOn.startsWith('/')
-						? currentLongestIntersectionFromLinterCwdOn.substring(1)
-						: currentLongestIntersectionFromLinterCwdOn;
-
-				if (commonRootPath > overlap) {
-					overlap = currentLongestIntersectionFromLinterCwdOn;
-					pathCandidate = possibleSanitizedImportSource;
-					pathCandidateAbsolute = possibleSanitizedImportSourceAsFullDiskPath;
-				}
-			});
-
-			if (!overlap.length) {
+			// If we have two sources, check if one of these exists. Take the first match.
+			const existingAbsoluteImportSources = absoluteImportSources.filter(
+				fs.existsSync
+			);
+			if (!existingAbsoluteImportSources.length === 1) {
+				return;
+			}
+			const [importSource] = existingAbsoluteImportSources;
+			if (!importSource?.length) {
 				return;
 			}
 
-			if (
-				!checkIfImportIsFromSameFolder({
-					from: dirOfInspectedFile,
-					to: pathCandidateAbsolute,
-				})
-			) {
+			let relativePath = pathModule.normalize(
+				pathModule.relative(dirOfInspectedFile, importSource)
+			);
+
+			const isImportFromParent = relativePath.startsWith('..');
+			if (isImportFromParent) {
 				return;
 			}
 
-			// Try to make import path relative.
-			// If the result is a valid relative URL, use it to fix
-			const sourceWithOverlapReplacedWithDot = replaceLastOccurrenceInString({
-				input: pathCandidate,
-				find: overlap,
-				replaceWith: '.',
-			});
-
-			if (!checkIfRelativePath(sourceWithOverlapReplacedWithDot)) {
-				return;
-			}
+			// pathModule.relative returned sth like Baz/baz.ts. Make it a proper relative import path preceded by a dot.
+			relativePath = `./${relativePath}`;
 
 			// finally, propose fix
 
@@ -127,13 +91,10 @@ function createRule(context) {
 				node,
 				messageId: 'importCanBeRelative',
 				data: {
-					fixedImportPath: sourceWithOverlapReplacedWithDot,
+					fixedImportPath: relativePath,
 				},
 				fix: (fixer) => {
-					return fixer.replaceText(
-						node.source,
-						`"${sourceWithOverlapReplacedWithDot}"`
-					);
+					return fixer.replaceText(node.source, `"${relativePath}"`);
 				},
 			});
 		},

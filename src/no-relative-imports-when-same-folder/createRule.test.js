@@ -1,7 +1,10 @@
+import fs from 'fs';
 import createRule, { messageIds } from './createRule';
 import getTsConfig from './utils/tsConfig/getTsConfig';
 
 jest.mock('./utils/tsConfig/getTsConfig');
+
+const existsSyncSpy = jest.spyOn(fs, 'existsSync').mockReturnValue(true);
 
 const defaultTsConfig = {
 	compilerOptions: {
@@ -164,25 +167,18 @@ describe('createRule', () => {
 
 				// test for the other possible dir
 
+				// simulate that the second path stated for the alias can be resolved to a file
+				existsSyncSpy.mockReturnValueOnce(true).mockReturnValueOnce(false);
+
 				runRuleForPath({
 					inspectedFilePath:
-						'/Users/spic/dev/some_repo/src/common/src/components/FormCheckbox/FormCheckbox.tsx',
-					importPath: '~/components/FormCheckbox/Icon/Icon.tsx',
+						'/Users/spic/dev/some_repo/src/client/src/renderer.tsx',
+					importPath: '~/config/globals',
 					tsConfig,
 				});
 
-				expect(defaultContext.report).toHaveBeenCalledWith({
-					data: {
-						fixedImportPath: './Icon/Icon.tsx',
-					},
-					fix: expect.any(Function),
-					messageId: messageIds.importCanBeRelative,
-					node: {
-						source: {
-							value: '~/components/FormCheckbox/Icon/Icon.tsx',
-						},
-					},
-				});
+				// import goes to src/common/src/*
+				expect(defaultContext.report).not.toHaveBeenCalledWith();
 			});
 		});
 	});
