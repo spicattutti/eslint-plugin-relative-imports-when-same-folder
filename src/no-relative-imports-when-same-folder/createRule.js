@@ -6,6 +6,7 @@ import replaceLastOccurrenceInString from './utils/replaceLastOccurrenceInString
 import getTsConfig from './utils/tsConfig/getTsConfig';
 import checkIfTsConfigAdaptsModuleResolution from './utils/tsConfig/checkIfTsConfigAdaptsModuleResolution';
 import resolveImportPathsBasedOnTsConfig from './utils/tsConfig/resolveImportPathsBasedOnTsConfig';
+import checkIfImportIsFromSameFolder from './utils/checkIfImportIsFromSameFolder';
 
 export const messageIds = {
 	importCanBeRelative: 'importCanBeRelative',
@@ -54,8 +55,10 @@ function createRule(context) {
 			// If there are multiple possible import paths, only is one is expected to
 			// be a candidate for a relative import
 			// Try to find the largest intersection between the import path and the CWD *for all possible import paths* and save that intersection string as well as the path.
-			let longestPartOfImportSourceFoundInCwd = '';
+			// TODO: make namings clearer
+			let overlap = '';
 			let pathCandidate = '';
+			let pathCandidateAbsolute = '';
 
 			const sanitizedImportSources = resolveImportPathsBasedOnTsConfig({
 				// e.g.["src/library/Foo/Bar/Baz/baz.ts"]
@@ -69,31 +72,48 @@ function createRule(context) {
 					possibleSanitizedImportSource
 				); // e.g.["/Users/spic/dev/some_repo/src/library/Foo/Bar/Baz/baz.ts"]
 
-				const currentLongestIntersection = getLongestPathIntersection({
+				const commonRootPath = getLongestPathIntersection({
 					pathA: possibleSanitizedImportSourceAsFullDiskPath,
 					pathB: dirOfInspectedFile,
 				});
 
-				const currentLongestIntersectionFromLinterCwdOn =
-					currentLongestIntersection.replace(linterCwd, '');
+				// remove path to repository from start of path
+				let currentLongestIntersectionFromLinterCwdOn = commonRootPath.replace(
+					linterCwd,
+					''
+				);
 
-				if (currentLongestIntersection > longestPartOfImportSourceFoundInCwd) {
-					longestPartOfImportSourceFoundInCwd =
-						currentLongestIntersectionFromLinterCwdOn;
+				// strip trailing slash
+				currentLongestIntersectionFromLinterCwdOn =
+					currentLongestIntersectionFromLinterCwdOn.startsWith('/')
+						? currentLongestIntersectionFromLinterCwdOn.substring(1)
+						: currentLongestIntersectionFromLinterCwdOn;
+
+				if (commonRootPath > overlap) {
+					overlap = currentLongestIntersectionFromLinterCwdOn;
 					pathCandidate = possibleSanitizedImportSource;
+					pathCandidateAbsolute = possibleSanitizedImportSourceAsFullDiskPath;
 				}
 			});
 
-			if (!longestPartOfImportSourceFoundInCwd.length) {
+			if (!overlap.length) {
 				return;
 			}
 
-			// try to make import path relative based on the found overlap.
-			// If the result is a valid relative URL, use it to fix
+			if (
+				!checkIfImportIsFromSameFolder({
+					from: dirOfInspectedFile,
+					to: pathCandidateAbsolute,
+				})
+			) {
+				return;
+			}
 
+			// Try to make import path relative.
+			// If the result is a valid relative URL, use it to fix
 			const sourceWithOverlapReplacedWithDot = replaceLastOccurrenceInString({
-				input: `/${pathCandidate}`, // does not start with a slash, so
-				find: longestPartOfImportSourceFoundInCwd, // starts with a slash
+				input: pathCandidate,
+				find: overlap,
 				replaceWith: '.',
 			});
 

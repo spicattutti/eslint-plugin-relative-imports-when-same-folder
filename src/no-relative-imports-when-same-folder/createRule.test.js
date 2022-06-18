@@ -75,7 +75,7 @@ describe('createRule', () => {
 					'@library': ['src/library/index.js'],
 					'@library/*': ['src/library/*'],
 					// aliases mapped to multiplePaths path
-					'~/*': ['src/client/src', 'src/server/src'],
+					'~/*': ['src/client/src/*', 'src/common/src/*'],
 				},
 			},
 		};
@@ -103,12 +103,12 @@ describe('createRule', () => {
 			});
 		});
 
-		describe('that imports from a sibling folder (with an overlap in the names)', () => {
+		describe('that imports from a sibling folder', () => {
 			it('does not report an error', () => {
 				runRuleForPath({
 					inspectedFilePath:
 						'/Users/spic/dev/some_repo/src/library/components/FormCheckbox/FormCheckbox.tsx',
-					importPath: '@library/src/library/components/Form/Form.scss',
+					importPath: '@library/components/Form/Form.scss',
 					tsConfig,
 				});
 
@@ -166,7 +166,7 @@ describe('createRule', () => {
 
 				runRuleForPath({
 					inspectedFilePath:
-						'/Users/spic/dev/some_repo/src/server/src/components/FormCheckbox/FormCheckbox.tsx',
+						'/Users/spic/dev/some_repo/src/common/src/components/FormCheckbox/FormCheckbox.tsx',
 					importPath: '~/components/FormCheckbox/Icon/Icon.tsx',
 					tsConfig,
 				});

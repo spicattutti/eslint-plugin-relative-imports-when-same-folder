@@ -98,7 +98,7 @@ What was missing was automation to refactor all absolute imports that can be rel
 
 # TODOs
 - [ ] check eslint settings to tell clients that this is a plugin for ts-parser
-- [ ] Test for windows
+- [ ] Support windoes -> e.g. read and use [platform specific segment separator](https://nodejs.org/api/path.html#pathsep)
 - [ ] Review algorithmic performance, thereby support optimizations with ..
 - [ ] Performance testing, see https://www.darraghoriordan.com/2021/11/06/how-to-write-an-eslint-plugin-typescript/
 - [ ] migrate to typescript !
