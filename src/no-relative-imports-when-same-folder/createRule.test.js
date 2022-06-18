@@ -1,16 +1,16 @@
 import createRule, { messageIds } from './createRule';
 import getTsConfig from './utils/tsConfig/getTsConfig';
-import checkIfFileExists from './utils/checkIfFileExists';
+import checkIfFolderExists from './utils/checkIfFolderExists';
 
 jest.mock('./utils/tsConfig/getTsConfig');
 
-jest.mock('./utils/checkIfFileExists', () => {
-	const actual = jest.requireActual('./utils/checkIfFileExists');
+jest.mock('./utils/checkIfFolderExists', () => {
+	const actual = jest.requireActual('./utils/checkIfFolderExists');
 
 	return {
 		...actual,
 		__esModule: true,
-		default: jest.fn(actual.default),
+		default: jest.fn(() => true),
 	};
 });
 
@@ -153,7 +153,7 @@ describe('createRule', () => {
 
 		describe('that have an alias that maps two two different dirs', () => {
 			it('reports the error', () => {
-				checkIfFileExists.mockImplementationOnce(() => {
+				checkIfFolderExists.mockImplementationOnce(() => {
 					return true;
 				});
 
@@ -181,7 +181,7 @@ describe('createRule', () => {
 
 				// simulate that the second path stated for the alias can be resolved to a file
 
-				checkIfFileExists
+				checkIfFolderExists
 					.mockImplementationOnce(() => {
 						return true;
 					})
