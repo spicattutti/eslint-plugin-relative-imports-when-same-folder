@@ -1,5 +1,11 @@
 # eslint-plugin-relative-imports-when-same-folder
 
+[![npm version](https://badge.fury.io/js/eslint-plugin-relative-imports-when-same-folder.svg)](https://badge.fury.io/js/eslint-plugin-relative-imports-when-same-folder)
+![example workflow](https://github.com/spicattutti/eslint-plugin-relative-imports-when-same-folder/actions/workflows/Node.js%20CI/badge.svg)
+
+
+
+
 An eslint plugin that converts any absolute import paths to relative ones **if a file is imported from within the same directory**.
 
 Resolves absolute paths to paths on disk by parsing a `tsconfig.json` expected to be found in the root of the repository
