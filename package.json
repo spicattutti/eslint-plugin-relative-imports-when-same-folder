@@ -4,14 +4,16 @@
   "description": "An eslint plugin to convert any absolute import paths to relative ones if files are imported from within the same folder",
   "main": "dist/index.js",
   "scripts": {
-    "install": "npm run build",
     "lint": "eslint .",
     "test": "jest",
-    "prepare": "husky install",
+    "prepare": "husky install && npm run build",
     "prebuild": "npm run build:clean",
     "build:clean": "rm -rf dist",
-    "build": "babel src --out-dir dist --ignore '**/*.test.js'"
+    "build": "babel src --out-dir dist --ignore '**/*.test.js'",
+    "prepublishOnly" : "npm test && npm run lint",
+    "postversion" : "git push && git push --tags"
   },
+  "files": ["dist/**/*"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/spicattutti/eslint-plugin-relative-imports-when-same-folder.git"
