@@ -2,6 +2,9 @@
 
 An eslint plugin that converts any absolute import paths to relative ones **if a file is imported from within the same directory**.
 
+Resolves absolute paths to paths on disk by parsing a `tsconfig.json` expected to be found in the root of the repository
+using this plugin.
+
 ```ts
 // ## Import sibling
 
@@ -32,10 +35,6 @@ import Bar from "./Bar/Bar"; // valid relative path
 import Something from "src/Foo/Bar/Bar";
 ```
 
-## Disclaimer
-
-This Plugin is not battle-tested, so consider it as ⚠️ not production ready ⚠️.
-Until it gets released to npm it is a Proof of concept.
 
 ## Prerequisites / Limitations
 
@@ -44,7 +43,7 @@ A modern JS/TS-based project can not only define some sort of baseUrl like `src`
 As an example, `~` can be an alias for all code under `<repository-root>/src`.
 
 ⚠️ This plugin only resolves module resolution configs `baseUrl` and `paths` defined in a single `tsconfig.json` in the repository root. ⚠️
-It also only supports the common [Node Module resolution strategy](https://www.typescriptlang.org/docs/handbook/module-resolution.html#module-resolution-strategies). There is no
+It only supports the common [Node Module resolution strategy](https://www.typescriptlang.org/docs/handbook/module-resolution.html#module-resolution-strategies). There is no
 support for
 - [rootDirs](https://www.typescriptlang.org/tsconfig#rootDirs)
 - multiple tsconfigs that extend each other.
@@ -59,25 +58,33 @@ See the [contributing](CONTRIBUTING.md) guide for broad instructions on how to g
 
 ## Setup Instructions 
 
-As mentioned, this is not published to npm yet.
-If you want to take it for a spin, run
+To install, run
 ```
-yarn add -D https://github.com/spicattutti/eslint-plugin-relative-imports-when-same-folder
+yarn add -D eslint-plugin-relative-imports-when-same-folder
 ```
 respectively
 ```
-npm install --save-dev https://github.com/spicattutti/eslint-plugin-relative-imports-when-same-folder
+npm install --save-dev eslint-plugin-relative-imports-when-same-folder
 ```
 
 Then update your eslint config by adding `relative-imports-when-same-folder` to the list of plugins,
 and turn on the main rule `no-relative-imports-when-same-folder` of this plugin.
 ```
-"relative-imports-when-same-folder/no-relative-imports-when-same-folder": "error",
+// .eslintrc.js
+  plugins: [
+    // other plugins ..
+    "relative-imports-when-same-folder",
+  ],
+  rules: {
+    // other rules ..
+    "relative-imports-when-same-folder/no-relative-imports-when-same-folder": "error",
+  }
 ```
 
 ## Example Repo
 
-TBD
+Check out https://github.com/s-pic/fixmy.frontend/tree/use_eslint-plugin-relative-imports-when-same-folder.
+It is a not too small, real-world project.
 
 # How this was born
 
@@ -101,7 +108,7 @@ What was missing was automation to refactor all absolute imports that can be rel
 - [ ] Add proper unit test using `RuleTester` from [typescript-eslint](https://github.com/typescript-eslint/typescript-eslint)
 - [ ] Check for a lib that helps with dealing with globs instead of verbosely hand-rolling the string manipulation logic
 - [ ] Solidify reverse mapping of path aliases with more tests, preferably using real world configs
-- [ ] Try to make the eslint config of this project [use the rule itself](https://github.com/not-an-aardvark/eslint-plugin-self), along with [import/order](https://github.com/import-js/eslint-plugin-import/blob/main/docs/rules/order.md) and [eslint-plugin-no-relative-import-paths](https://www.npmjs.com/package/eslint-plugin-no-relative-import-paths) :) This clears the need example repo. 
+- [ ] Try to find a lib to reverse-map tsconfig module resolution configs. This must have been solved somewhere else already.
 - [ ] CI
 
 # Acknowledgements
