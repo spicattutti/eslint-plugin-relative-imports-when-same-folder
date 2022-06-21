@@ -41,6 +41,8 @@ import Something from "src/Foo/Bar/Bar";
 
 ## Prerequisites / Limitations
 
+### Module resolution must be defined in `tsconfig.json`
+
 A modern JS/TS-based project can not only define some sort of baseUrl like `src`, it can also define import aliases using [webpack`s resolve option](https://webpack.js.org/configuration/resolve/) or [path mappings specified tsconfig](https://www.typescriptlang.org/docs/handbook/module-resolution.html).
 
 As an example, `~` can be an alias for all code under `<repository-root>/src`.
@@ -54,6 +56,28 @@ support for
 Contributions to make this more flexible or to retrieve module resolution mappings out of a webpack config are welcome.
 
 As a workaround to this limitation, a project can re-use or re-declare import aliases that are defined in a webpack config in the project`s tsconfig.
+
+### Default set of file extensions used when resolving paths
+
+When an alias is mapped to a single path, we assume that another mechanism (e.g. TypeScript or [no-unresolved](https://github.com/import-js/eslint-plugin-import/blob/main/docs/rules/no-unresolved.md)) already ensures that the de-aliased path is valid.
+
+When an alias is mapped to more than one path, we check what de-aliased path can be resolved. Here we assume a default set
+of file extensions.
+
+```
+[
+    '.js',
+    '.ts',
+    '.jsx',
+    '.tsx',
+    '.scss',
+    '.css',
+    '.svg',
+    '.json',
+]
+```
+
+Based on demand, this can be made configurable.
 
 # How to contribute
 
