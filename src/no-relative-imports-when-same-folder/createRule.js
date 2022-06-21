@@ -4,7 +4,7 @@ import checkIfRelativePath from './utils/checkIfRelativePath';
 import getTsConfig from './utils/tsConfig/getTsConfig';
 import checkIfTsConfigAdaptsModuleResolution from './utils/tsConfig/checkIfTsConfigAdaptsModuleResolution';
 import resolveImportPathsBasedOnTsConfig from './utils/tsConfig/resolveImportPathsBasedOnTsConfig';
-import checkIfFolderExists from './utils/checkIfFolderExists';
+import checkIfPathCanBeResolved from './utils/checkIfPathCanBeResolved';
 
 export const messageIds = {
 	importCanBeRelative: 'importCanBeRelative',
@@ -39,7 +39,7 @@ function createRule(context) {
 	return {
 		// AST element to provide the import path
 		ImportDeclaration(node) {
-			const rawImportSource = node.source.value; // e.g. "@library/Foo/Bar/Baz/baz.ts"
+			const rawImportSource = node.source.value; // e.g. "@library/Foo/Bar/Baz/baz"
 
 			if (checkIfRelativePath(rawImportSource)) {
 				// no-op. We assume that some other plugin (e.g. https://www.npmjs.com/package/eslint-plugin-no-relative-import-paths)
@@ -51,7 +51,7 @@ function createRule(context) {
 
 			// Depending on path mapping config, an import might get resolved to more than one file.
 			const sanitizedImportSources = resolveImportPathsBasedOnTsConfig({
-				// e.g.["src/library/Foo/Bar/Baz/baz.ts"]
+				// e.g.["src/library/Foo/Bar/Baz/baz"]
 				tsConfig,
 				importPath: rawImportSource,
 			});
@@ -64,7 +64,16 @@ function createRule(context) {
 			// If we have two sources, check if one of these exists. Take the first match.
 			const existingAbsoluteImportSources =
 				absoluteImportSources.length > 1
-					? absoluteImportSources.filter(checkIfFolderExists)
+					? absoluteImportSources.filter((absoluteImportSource) =>
+							checkIfPathCanBeResolved({
+								fromDir: linterCwd,
+								// pathModule.relative returned sth like Baz/baz.ts. Make it a proper relative import path preceded by a dot.
+								toPath: `./${pathModule.relative(
+									linterCwd,
+									absoluteImportSource
+								)}`,
+							})
+					  )
 					: absoluteImportSources;
 
 			if (!existingAbsoluteImportSources.length === 1) {
