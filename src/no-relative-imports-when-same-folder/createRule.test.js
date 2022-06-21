@@ -114,6 +114,54 @@ describe('createRule', () => {
 			});
 		});
 
+		describe('that imports from a sibling file', () => {
+			it('reports an error', () => {
+				runRuleForPath({
+					inspectedFilePath:
+						'/Users/spic/dev/some_repo/src/library/components/FormCheckbox/FormCheckbox.tsx',
+					importPath: '@library/components/FormCheckbox/Form.scss',
+					tsConfig,
+				});
+
+				expect(defaultContext.report).toHaveBeenCalledWith({
+					data: {
+						fixedImportPath: './Form.scss',
+					},
+					fix: expect.any(Function),
+					messageId: messageIds.importCanBeRelative,
+					node: {
+						source: {
+							value: '@library/components/FormCheckbox/Form.scss',
+						},
+					},
+				});
+			});
+		});
+
+		describe('that imports from an index file within the same folder', () => {
+			it('reports an error', () => {
+				runRuleForPath({
+					inspectedFilePath:
+						'/Users/spic/dev/some_repo/src/library/components/FormCheckbox/FormCheckbox.tsx',
+					importPath: '@library/components/FormCheckbox',
+					tsConfig,
+				});
+
+				expect(defaultContext.report).toHaveBeenCalledWith({
+					data: {
+						fixedImportPath: './',
+					},
+					fix: expect.any(Function),
+					messageId: messageIds.importCanBeRelative,
+					node: {
+						source: {
+							value: '@library/components/FormCheckbox',
+						},
+					},
+				});
+			});
+		});
+
 		describe('that imports from a sibling folder', () => {
 			it('does not report an error', () => {
 				runRuleForPath({

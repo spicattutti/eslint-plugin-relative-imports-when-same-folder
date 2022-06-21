@@ -94,7 +94,8 @@ function createRule(context) {
 			}
 
 			// pathModule.relative returned sth like Baz/baz.ts. Make it a proper relative import path preceded by a dot.
-			relativePath = `./${relativePath}`;
+			// TODO: find node util or lib to solve this, must not be hand-rolled
+			relativePath = relativePath === '.' ? './' : `./${relativePath}`;
 
 			// finally, propose fix
 
