@@ -10,10 +10,12 @@
     "prebuild": "npm run build:clean",
     "build:clean": "rm -rf dist",
     "build": "babel src --out-dir dist --ignore '**/*.test.js'",
-    "prepublishOnly" : "npm test && npm run lint",
-    "postversion" : "git push && git push --tags"
+    "prepublishOnly": "npm test && npm run lint",
+    "postversion": "git push && git push --tags"
   },
-  "files": ["dist/**/*"],
+  "files": [
+    "dist/**/*"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/spicattutti/eslint-plugin-relative-imports-when-same-folder.git"
@@ -34,6 +36,7 @@
   },
   "homepage": "https://github.com/spicattutti/eslint-plugin-relative-imports-when-same-folder#readme",
   "dependencies": {
+    "enhanced-resolve": "^5.9.3",
     "ramda": "^0.28.0"
   },
   "devDependencies": {
