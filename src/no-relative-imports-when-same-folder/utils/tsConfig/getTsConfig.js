@@ -1,22 +1,23 @@
 import fs from 'fs';
 import path from 'path';
 
-function findDirWithFile(filename) {
-	// start at our CWD and traverse upwards until we either hit the root "/" or find a directory with our file
-	let dir = path.resolve(filename);
+function findDirWithFile(startDir, filename) {
+	const rootDir = path.resolve(filename);
+	let dir = path.resolve(startDir);
+
+	// Traverse upwards from startDir to rootDir
 	do {
+		if (fs.existsSync(path.join(dir, filename))) {
+			return dir;
+		}
 		dir = path.dirname(dir);
-	} while (!fs.existsSync(path.join(dir, filename)) && dir !== '/');
+	} while (dir !== rootDir);
 
-	if (!fs.existsSync(path.join(dir, filename))) {
-		return undefined;
-	}
-
-	return dir;
+	return undefined;
 }
 
-export default function getTsConfig() {
-	const baseDir = findDirWithFile('package.json');
+export default function getTsConfig(dirOfInspectedFile) {
+	const baseDir = findDirWithFile(dirOfInspectedFile, 'package.json');
 	if (!baseDir) {
 		return undefined;
 	}
