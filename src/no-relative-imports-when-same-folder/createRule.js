@@ -25,7 +25,7 @@ function createRule(context) {
 	const linterCwd = context.getCwd(); // cwd passed to `Linter`, see https://eslint.org/docs/developer-guide/nodejs-api#linter
 	const dirOfInspectedFile = pathModule.dirname(filename); //  "/Users/spic/dev/some_repo/src/library/Foo/Bar"
 
-	const tsConfig = getTsconfig(dirOfInspectedFile);
+	const tsConfig = getTsconfig(dirOfInspectedFile)?.config;
 
 	if (!tsConfig) {
 		throw new Error(`No tsconfig found. \n\n${ERROR_INFO}\n\n`);

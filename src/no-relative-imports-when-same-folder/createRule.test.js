@@ -38,7 +38,7 @@ const runRuleForPath = ({
 	inspectedFilePath,
 	tsConfig = defaultTsConfig,
 }) => {
-	getTsConfigMock.mockReturnValueOnce(tsConfig);
+	getTsConfigMock.mockReturnValueOnce(tsConfig && { config: tsConfig });
 
 	const node = {
 		source: {
