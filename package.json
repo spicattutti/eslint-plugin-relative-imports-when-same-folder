@@ -37,6 +37,7 @@
   "homepage": "https://github.com/spicattutti/eslint-plugin-relative-imports-when-same-folder#readme",
   "dependencies": {
     "enhanced-resolve": "^5.18.0",
+    "get-tsconfig": "^4.10.0",
     "ramda": "^0.28.0"
   },
   "devDependencies": {
