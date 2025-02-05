@@ -1,7 +1,8 @@
 import pathModule from 'path';
 
+import { getTsconfig } from 'get-tsconfig';
+
 import checkIfRelativePath from './utils/checkIfRelativePath';
-import getTsConfig from './utils/tsConfig/getTsConfig';
 import checkIfTsConfigAdaptsModuleResolution from './utils/tsConfig/checkIfTsConfigAdaptsModuleResolution';
 import resolveImportPathsBasedOnTsConfig from './utils/tsConfig/resolveImportPathsBasedOnTsConfig';
 import checkIfPathCanBeResolved from './utils/checkIfPathCanBeResolved';
@@ -24,7 +25,7 @@ function createRule(context) {
 	const linterCwd = context.getCwd(); // cwd passed to `Linter`, see https://eslint.org/docs/developer-guide/nodejs-api#linter
 	const dirOfInspectedFile = pathModule.dirname(filename); //  "/Users/spic/dev/some_repo/src/library/Foo/Bar"
 
-	const tsConfig = getTsConfig();
+	const tsConfig = getTsconfig(dirOfInspectedFile)?.config;
 
 	if (!tsConfig) {
 		throw new Error(`No tsconfig found. \n\n${ERROR_INFO}\n\n`);
@@ -32,7 +33,7 @@ function createRule(context) {
 
 	if (!checkIfTsConfigAdaptsModuleResolution(tsConfig)) {
 		throw new Error(
-			`No module resolution setup found in tsConfig.json.\n\n${ERROR_INFO} \n\n`
+			`No module resolution setup found in tsconfig.json.\n\n${ERROR_INFO} \n\n`
 		);
 	}
 

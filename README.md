@@ -47,11 +47,9 @@ A modern JS/TS-based project can not only define some sort of baseUrl like `src`
 
 As an example, `~` can be an alias for all code under `<repository-root>/src`.
 
-⚠️ This plugin only resolves module resolution configs `baseUrl` and `paths` defined in a single `tsconfig.json` in the repository root. ⚠️
+This plugin checks resolution configs `baseUrl` and `paths` defined in single or nested `tsconfig.json`s. ️
 It only supports the common [Node Module resolution strategy](https://www.typescriptlang.org/docs/handbook/module-resolution.html#module-resolution-strategies). There is no
-support for
-- [rootDirs](https://www.typescriptlang.org/tsconfig#rootDirs)
-- multiple tsconfigs that extend each other.
+support for [rootDirs](https://www.typescriptlang.org/tsconfig#rootDirs)
 
 Contributions to make this more flexible or to retrieve module resolution mappings out of a webpack config are welcome.
 
