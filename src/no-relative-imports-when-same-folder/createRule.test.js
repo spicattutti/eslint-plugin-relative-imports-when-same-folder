@@ -89,6 +89,7 @@ describe('createRule', () => {
 					// aliases mapped to a single path
 					'@library': ['src/library/index.js'],
 					'@library/*': ['src/library/*'],
+					'@/*': ['apps/app/src/*'],
 					// aliases mapped to multiplePaths path
 					'~/*': ['src/client/src/*', 'src/common/src/*'],
 				},
@@ -250,6 +251,21 @@ describe('createRule', () => {
 
 				// import goes to src/common/src/*
 				expect(defaultContext.report).not.toHaveBeenCalledWith();
+			});
+		});
+
+		describe('that import from a node module', () => {
+			// Eventually, a better implementation would be trying to resolve the import to a file entry in
+			// node_modules. Currently it's good enough if the mechanism does not resolve the import path
+			// path to a sibling or descendant file.
+			it('does not report an error', () => {
+				runRuleForPath({
+					inspectedFilePath: '/Users/spic/dev/some_repo/apps/app/foo.ts',
+					importPath: '@testing-library/react',
+					tsConfig,
+				});
+
+				expect(defaultContext.report).not.toHaveBeenCalled();
 			});
 		});
 	});
