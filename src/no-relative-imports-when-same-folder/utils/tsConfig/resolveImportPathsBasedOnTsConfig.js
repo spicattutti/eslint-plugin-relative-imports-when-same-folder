@@ -62,22 +62,28 @@ export default function resolveImportPathsBasedOnTsConfig({
 		return possiblePaths;
 	}
 
-	pathMappingsWithWildCard.forEach(([currentAlias, currentMappedPaths]) => {
-		currentMappedPaths.forEach((currentMappedPath) => {
-			const aliasSplitAtWildCard = currentAlias.split('/*'); // '@library/*' -> ['@library/', '*']
-			const [aliasRoot] = aliasSplitAtWildCard; // '@library/'
+	pathMappingsWithWildCard.forEach(
+		([
+			currentAlias, // example: '@library/*'
+			currentMappedPaths,
+		]) => {
+			currentMappedPaths.forEach((currentMappedPath) => {
+				const [aliasRoot] = currentAlias.split('/*'); // '@library'
 
-			const mappedPathSplitAtWildCard = currentMappedPath.split('*'); // 'src/library/*' -> ['src/library/', '*']
-			const [mappedPathRoot] = mappedPathSplitAtWildCard; // src/library/
+				const mappedPathSplitAtWildCard = currentMappedPath.split('*'); // 'src/library/*' -> ['src/library/', '*']
+				const [mappedPathRoot] = mappedPathSplitAtWildCard; // src/library/
 
-			if (importPath.includes(aliasRoot)) {
-				const sanitizedPath = pathModule.join(
-					importPath.replace(aliasRoot, mappedPathRoot)
-				);
-				possiblePaths.push(sanitizedPath);
-			}
-		});
-	});
+				const [importPathRoot] = importPath.split('/');
+
+				if (importPathRoot === aliasRoot) {
+					const sanitizedPath = pathModule.join(
+						importPath.replace(aliasRoot, mappedPathRoot)
+					);
+					possiblePaths.push(sanitizedPath);
+				}
+			});
+		}
+	);
 
 	if (possiblePaths.length) {
 		return possiblePaths;

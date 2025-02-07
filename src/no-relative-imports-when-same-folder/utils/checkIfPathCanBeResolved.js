@@ -21,7 +21,7 @@ export default function checkIfPathCanBeResolved({ fromDir, toPath }) {
 	try {
 		file = resolve(fromDir, toPath);
 	} catch {
-		// Not resolved. This isxpected, ust swallow the error.
+		// Not resolved. This is expected, just swallow the error.
 	}
 
 	return Boolean(file);
